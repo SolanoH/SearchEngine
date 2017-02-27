@@ -37,8 +37,4 @@ public class post {
 		return termId;
 	}
 	
-	
-	
-	
-
 }

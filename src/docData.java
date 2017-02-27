@@ -52,17 +52,5 @@ public class docData {
 		return metaData.getOrDefault("docType", null);
 	}
 	
-	
-	
-		/*
-		metaData = new ConcurrentHashMap<String, String>();
-		metaData.put("authors", "None");
-		metaData.put("dateOfCreation", "None");
-		metaData.put("title", "None");
-		metaData.put("docType", "None");
-	
-		zones.put("author", "None");
-		zones.put("title", "None");
-		zones.put("abstract", "None");	
-		*/	
+
 }
