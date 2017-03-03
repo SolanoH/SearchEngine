@@ -6,43 +6,44 @@ import java.util.LinkedHashSet;
  */
 
 public class Pair{
-	private Integer left;
-	private LinkedHashSet<Integer> list;
+	private Integer docFreq;
+	private LinkedHashSet<Integer> postings;
 	
 	/* Empty constructor */
 	public Pair() {
-		list = new LinkedHashSet<>();
+		docFreq = 0;
+		postings = new LinkedHashSet<>();
 	}
 	
-	public Pair(Integer leftValue, Integer rightValue){
-		left = leftValue;
-		list = new LinkedHashSet<>();
-		list.add(rightValue);
+	public Pair(Integer posting){
+		docFreq = 1;
+		postings = new LinkedHashSet<>();
+		postings.add(posting);
 	}
 	
 	/* Returns left value */
-	public Integer getLeft(){
-		return left;
+	public Integer getDocFrequency(){
+		return docFreq;
 	}
 	
 	/* Returns right value */
 	public LinkedHashSet<Integer> getRight(){
-		return list;
+		return postings;
 	}
 	
 	/* Set left Value  */
 	public void setLeft(Integer value){
-		left = value;
+		docFreq = value;
 	}
 	
 	/* Set right Value  */
-	public void addElement(Integer element){
-		list.add(element);
+	public void addPosting(Integer posting){
+		postings.add(posting);
 	}
 	
 	/* Increment Left Value  */
-	public void incrementLeft(){
-		left++;
+	public void incrementDocFrequency(){
+		docFreq++;
 	}
 	
 	
