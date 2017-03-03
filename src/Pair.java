@@ -27,7 +27,7 @@ public class Pair{
 	}
 	
 	/* Returns right value */
-	public LinkedHashSet<Integer> getRight(){
+	public LinkedHashSet<Integer> getPostings(){
 		return postings;
 	}
 	
