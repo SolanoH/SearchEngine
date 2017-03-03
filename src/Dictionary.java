@@ -31,5 +31,16 @@ public class Dictionary implements Serializable {
 	public LinkedList<Integer> getPostings(String term){
 		return index.get(term).getRight();
 	}
+	
+	/* write Class Dictionary to file */
+	public void writeClassToFile(String filename){
+		
+	}
+	
+	
+	/* load Class Dictionary from file */
+	public void loadClassFromFile(String filename){
+		
+	}
 
 }
