@@ -20,8 +20,8 @@ public class SearchTree {
 	 * @throws FileNotFoundException 
 	 * 
 	 */
-	public static LinkedList getFiles(String rootFolder) {
-		LinkedList  fileList = new LinkedList();
+	public static LinkedList<String> getFiles(String rootFolder) {
+		LinkedList<String>  fileList = new LinkedList<String>();
 		File file = new File(rootFolder);
 		Collection<File> files = FileUtils.listFiles(file, null, true);
 		for(File file2 : files){
