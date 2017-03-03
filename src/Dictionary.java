@@ -33,7 +33,7 @@ public class Dictionary implements Serializable {
 	}
 	
 	public LinkedHashSet <Integer> getPostings(String term){
-		return index.get(term).getRight();
+		return index.get(term).getPostings();
 	}
 	
 	/* write Class Dictionary to file */
@@ -41,7 +41,8 @@ public class Dictionary implements Serializable {
 		PrintWriter writer = new PrintWriter(filename);
 		for (Entry<String, Pair> t : index.entrySet()){
 			writer.print(t.getKey());
-			Iterator<Integer> iterator = index.get(t.getKey()).getRight().iterator();
+			writer.print("," + index.get(t.getKey()).getDocFrequency());
+			Iterator<Integer> iterator = index.get(t.getKey()).getPostings().iterator();
 			while (iterator.hasNext()){
 				writer.print("," + iterator.next());
 			}
