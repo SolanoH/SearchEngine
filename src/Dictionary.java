@@ -1,39 +1,35 @@
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.Serializable;
 
-public class Dictionary {
-	ConcurrentHashMap<String, ConcurrentHashMap<String, LinkedList<Integer>>> index;
-	String postings = "Postings";
-	String docFreq = "docFreq";
+public class Dictionary implements Serializable {
+	ConcurrentHashMap<String,Pair> index;
+	private static final long serialVersionUID = 1L;
 
 	public Dictionary() {
-		index = new ConcurrentHashMap<String, ConcurrentHashMap<String, LinkedList<Integer>>>();
+		index = new ConcurrentHashMap<>();
 	}
 	
 	public void addtoDictonary(int docID, String term){
-		if (index.getOrDefault(term, null) == null){
-			ConcurrentHashMap<String, LinkedList<Integer>> element = new ConcurrentHashMap<String, LinkedList<Integer>>();
-			LinkedList<Integer> postList = new LinkedList<Integer>();
-			postList.add(docID);
-			LinkedList<Integer> freq = new LinkedList<Integer>();;
-			freq.add(1);
-			element.put(postings, postList);
-			element.put(docFreq, freq);
+		
+		if( term.isEmpty() )
+			return;
+			if (index.getOrDefault(term, null) == null){
+			Pair element = new Pair(1,docID);
 			index.put(term,element);	
 		}
 		else{
-			index.get(term).get(postings).add(docID);
-			int value = index.get(term).get(docFreq).getFirst();
-			index.get(term).get(docFreq).set(0,value + 1);
+			index.get(term).addElement(docID);
+			index.get(term).incrementLeft();
 		}
 	}
 	
 	public int getDocFreq(String term){
-		return index.get(term).get(docFreq).getFirst();
+		return index.get(term).getLeft();
 	}
 	
 	public LinkedList<Integer> getPostings(String term){
-		return index.get(term).get(postings);
+		return index.get(term).getRight();
 	}
 
 }
