@@ -1,6 +1,10 @@
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.Iterator;
 
 public class Dictionary implements Serializable {
 	ConcurrentHashMap<String,Pair> index;
@@ -28,13 +32,22 @@ public class Dictionary implements Serializable {
 		return index.get(term).getLeft();
 	}
 	
-	public LinkedList<Integer> getPostings(String term){
+	public LinkedHashSet <Integer> getPostings(String term){
 		return index.get(term).getRight();
 	}
 	
 	/* write Class Dictionary to file */
-	public void writeClassToFile(String filename){
-		
+	public void writeClassToFile(String filename) throws FileNotFoundException{
+		PrintWriter writer = new PrintWriter(filename);
+		for (Entry<String, Pair> t : index.entrySet()){
+			writer.print(t.getKey());
+			Iterator<Integer> iterator = index.get(t.getKey()).getRight().iterator();
+			while (iterator.hasNext()){
+				writer.print("," + iterator.next());
+			}
+			writer.println();
+		}
+		writer.close();
 	}
 	
 	
