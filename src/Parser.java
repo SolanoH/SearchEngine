@@ -1,9 +1,9 @@
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * the skeletons of the methods I added but they have to return the concurrent maps.
  */
 
+
 public class Parser
 {
 	int docId;
@@ -26,12 +27,16 @@ public class Parser
 
 
 	@SuppressWarnings("rawtypes")
-	public Parser( Document document, int id )
+	public Parser( File document, int id )
 	{
 		docId = id;
-		htmlDocument = document;
-		wordFreq = new ConcurrentHashMap<>();
-		Table< String ,Integer,LinkedList<Integer>> twoDimensionalFileMap = HashBasedTable.create();
+		try {
+			htmlDocument = Jsoup.parse( document, "UTF-8", "" );
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//wordFreq = new ConcurrentHashMap<>();
+		//Table< String ,Integer,LinkedList<Integer>> twoDimensionalFileMap = HashBasedTable.create();
 
 
 		//initializeConcurrentHashMap();
@@ -114,12 +119,22 @@ public class Parser
 		 */
 	}
 
-	public void wordFrequency()
+	public static ConcurrentHashMap< String, Integer > wordFrequency(File html)
 	{
+		Document htmlDocument = null;
+		try {
+			htmlDocument = Jsoup.parse( html, "UTF-8", "" );
+		} catch ( Exception e) {
+			//e.printStackTrace();
+
+			return null;
+		}
+		ConcurrentHashMap< String, Integer > wordFreq = new ConcurrentHashMap< String, Integer >();
 		for( String line : htmlDocument.html().split( "\n" ) )
 			for( String word : Jsoup.parse( line ).text().replaceAll( "[^a-zA-Z0-9]+", " " ).split( "\\s+" ) )
 				if( !word.isEmpty() )
 					wordFreq.put( word, ( wordFreq.containsKey( word ) ? wordFreq.get( word ) + 1 : 1 ) );
+		return wordFreq;
 	}
 
 }
