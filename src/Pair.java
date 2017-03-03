@@ -1,4 +1,4 @@
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 
 /**
  * A Pair is a container that holds to an integer and LinkedList<Integer>
@@ -7,16 +7,16 @@ import java.util.LinkedList;
 
 public class Pair{
 	private Integer left;
-	private LinkedList<Integer> list;
+	private LinkedHashSet<Integer> list;
 	
 	/* Empty constructor */
 	public Pair() {
-		list = new LinkedList<>();
+		list = new LinkedHashSet<>();
 	}
 	
 	public Pair(Integer leftValue, Integer rightValue){
 		left = leftValue;
-		list = new LinkedList<>();
+		list = new LinkedHashSet<>();
 		list.add(rightValue);
 	}
 	
@@ -26,7 +26,7 @@ public class Pair{
 	}
 	
 	/* Returns right value */
-	public LinkedList<Integer> getRight(){
+	public LinkedHashSet<Integer> getRight(){
 		return list;
 	}
 	
