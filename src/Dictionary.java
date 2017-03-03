@@ -19,17 +19,17 @@ public class Dictionary implements Serializable {
 		if( term.isEmpty() )
 			return;
 			if (index.getOrDefault(term, null) == null){
-			Pair element = new Pair(1,docID);
+			Pair element = new Pair(docID);
 			index.put(term,element);	
 		}
 		else{
-			index.get(term).addElement(docID);
-			index.get(term).incrementLeft();
+			index.get(term).addPosting(docID);
+			index.get(term).incrementDocFrequency();
 		}
 	}
 	
 	public int getDocFreq(String term){
-		return index.get(term).getLeft();
+		return index.get(term).getDocFrequency();
 	}
 	
 	public LinkedHashSet <Integer> getPostings(String term){
