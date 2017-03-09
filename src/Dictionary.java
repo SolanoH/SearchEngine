@@ -1,9 +1,15 @@
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 public class Dictionary implements Serializable {
@@ -37,7 +43,7 @@ public class Dictionary implements Serializable {
 	}
 	
 	/* write Class Dictionary to file */
-	public void writeClassToFile(String filename) throws FileNotFoundException{
+	public void writeIndexToFile(String filename) throws FileNotFoundException{
 		PrintWriter writer = new PrintWriter(filename);
 		for (Entry<String, Pair> t : index.entrySet()){
 			writer.print(t.getKey());
@@ -53,8 +59,24 @@ public class Dictionary implements Serializable {
 	
 	
 	/* load Class Dictionary from file */
-	public void loadClassFromFile(String filename){
+	public void loadIndexFromFile(String filename){
+		try (BufferedReader buffer = new BufferedReader(new FileReader(filename))) {
+		    String line;
+		    while ((line = buffer.readLine()) != null) {
+		       String[] data = line.split(",");
+		       for (int i = 1; i < data.length; i++){
+		    	   addtoDictonary(Integer.parseInt(data[i]), data[0] );
+		       }
+		    }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
 }
+
+
+
