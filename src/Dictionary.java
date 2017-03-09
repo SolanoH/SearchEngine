@@ -1,15 +1,12 @@
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Iterator;
 
 public class Dictionary implements Serializable {
@@ -19,6 +16,14 @@ public class Dictionary implements Serializable {
 	public Dictionary() {
 		index = new ConcurrentHashMap<>();
 	}
+	
+	
+	public Dictionary(String fileName) {
+		index = new ConcurrentHashMap<>();
+		loadIndexFromFile(fileName);
+	}
+	
+	
 	
 	public void addtoDictonary(int docID, String term){
 		
@@ -35,11 +40,11 @@ public class Dictionary implements Serializable {
 	}
 	
 	public int getDocFreq(String term){
-		return index.get(term).getDocFrequency();
+		return index.getOrDefault(term, null).getDocFrequency();
 	}
 	
 	public LinkedHashSet <Integer> getPostings(String term){
-		return index.get(term).getPostings();
+		return index.getOrDefault(term, null).getPostings();
 	}
 	
 	/* write Class Dictionary to file */
