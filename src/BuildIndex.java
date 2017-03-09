@@ -27,8 +27,10 @@ public class BuildIndex {
 		while ((filename = (String) fileList.pollFirst()) != null){
 			if (heapFreeSize > stop){
 				File fd = new File(filename);
-				ConcurrentHashMap< String, Integer > d = Parser.wordFrequency(fd);
-				//System.out.println(d);
+				Parser p = new Parser(fd,docID,"");
+				System.out.println(filename);
+				ConcurrentHashMap< String, Integer > d = p.wordFrequency();
+				System.out.println(d);
 				if( d != null )
 				for (Map.Entry<String, Integer> key : d.entrySet()){
 					index.addtoDictonary(docID, key.getKey());
@@ -36,20 +38,15 @@ public class BuildIndex {
 				docID++;
 			}
 			else {
-				index.writeClassToFile("/Users/Hector/Desktop/index" + fileNumber );
+				index.writeIndexToFile("/Users/Hector/Desktop/index" + fileNumber );
 				fileNumber++;
 				System.gc();
-				System.out.println(filename);
-				System.out.println(docID);
-				System.out.println(heapMaxSize);
-				System.out.println(heapFreeSize);
-				System.out.println(stop);	
 				index = new Dictionary();
 			}
 			
 		}
 		
-		index.writeClassToFile("/Users/Hector/Desktop/index" + fileNumber );
+		index.writeIndexToFile("/Users/Hector/Desktop/index" + fileNumber );
 		System.out.println("DONE");
 		System.out.println(docID);
 	}
