@@ -28,7 +28,7 @@ public class BuildIndex {
 			if (heapFreeSize > stop){
 				File fd = new File(filename);
 				Parser p = new Parser(fd,docID,"");
-				System.out.println(filename);
+				System.out.println("MADE IT PASS NEW PARSER");
 				ConcurrentHashMap< String, Integer > d = p.wordFrequency();
 				System.out.println(d);
 				if( d != null )
