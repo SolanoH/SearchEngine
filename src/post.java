@@ -7,34 +7,33 @@
  *
  */
 
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 public class post {
-	int docId;
-	int termIdCount;
-	String termId;
-	ConcurrentHashMap<String, String> metaData;
-	ConcurrentHashMap<String, String> zones;
-	
+	ConcurrentHashMap<Integer, docData> posts;
 
 	
-	public post(int id, int count, String tId){
-		termIdCount = count;
-		docId = id;
-		termId = tId;		
+	public post(){
+		posts = new ConcurrentHashMap<Integer, docData>();
 	}
 	
-	public int getTermCount(){
-		return termIdCount;
+	public void addPost(docData post){
+		posts.put(post.docId, post);
 	}
 	
-	public int getDocId(){
-		return docId;
-	}
 	
-	public String getTermId(){
-		return termId;
+	// Takes a list of document IDs and returns a list of docData
+	public LinkedHashSet<docData> getPostData(LinkedHashSet<Integer> postList){
+		LinkedHashSet<docData> postings = new LinkedHashSet<>();
+		Iterator<Integer> iterator = postList.iterator();
+		while (iterator.hasNext()){
+			postings.add(posts.get(iterator.next()));
+		}
+		return postings;
+			
 	}
-	
 }
+	

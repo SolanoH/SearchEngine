@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BuildIndex {
@@ -16,7 +17,7 @@ public class BuildIndex {
 		LinkedList<String> fileList = searchFileDirectory.getFiles("/Users/Hector/Downloads/WEBPAGES_RAW");
 		System.out.println("Start");
 		System.out.println(fileList.size());
-		Dictionary index = new Dictionary();
+		InvertedIndex index = new InvertedIndex();
 		long heapMaxSize = Runtime.getRuntime().maxMemory();
 		long heapFreeSize = Runtime.getRuntime().freeMemory();
 		long heapSize = Runtime.getRuntime().totalMemory();
@@ -24,31 +25,61 @@ public class BuildIndex {
 		String filename;
 		int docID = 0;
 		int fileNumber = 0;
+		ConcurrentHashMap<String, String> urls = urlMap.buildUrlMap("/Users/Hector/Desktop/bookkeeping.txt");
+		String urlKey;
+		post posts = new post();
+		docData data;
+		for( String k : urls.keySet() )
+			//System.out.println( k );
 		while ((filename = (String) fileList.pollFirst()) != null){
 			if (heapFreeSize > stop){
 				File fd = new File(filename);
-				Parser p = new Parser(fd,docID,"");
-				System.out.println("MADE IT PASS NEW PARSER");
+				//System.out.println(filename);
+				urlKey = filename.substring(37);
+				//System.out.println(urlKey);
+				Parser p = new Parser(fd,docID, urls.get(urlKey) );
 				ConcurrentHashMap< String, Integer > d = p.wordFrequency();
-				System.out.println(d);
-				if( d != null )
+				if( d != null ){
 				for (Map.Entry<String, Integer> key : d.entrySet()){
 					index.addtoDictonary(docID, key.getKey());
+				}
+				
+				data = new docData(p);
+				posts.addPost(data);
 				}
 				docID++;
 			}
 			else {
-				index.writeIndexToFile("/Users/Hector/Desktop/index" + fileNumber );
+				index.writeIndexToDisk("/Users/Hector/Desktop/index" + fileNumber );
 				fileNumber++;
 				System.gc();
-				index = new Dictionary();
+				index = new InvertedIndex();
 			}
 			
 		}
 		
-		index.writeIndexToFile("/Users/Hector/Desktop/index" + fileNumber );
+		//index.writeIndexToFile("/Users/Hector/Desktop/index" + fileNumber );
 		System.out.println("DONE");
-		System.out.println(docID);
+		LinkedList<String> query = new LinkedList<>();
+		Scanner sc = new Scanner(System.in);
+		
+		String line;
+		while(true){
+			System.out.print("Enter Search Query: ");
+			line = sc.nextLine();
+			System.out.println("\n Searching : " + line);
+			String[] input = line.split("\\s+");	
+			LinkedList< String > d = new LinkedList<>();
+			for( String a : input )
+				d.add( a );
+			SearchDocuments postings = new SearchDocuments(input, index);
+			//System.out.println(postings.getSearchResults());
+			Ranker ranker = new Ranker(d, posts.getPostData(postings.getSearchResults()));
+			System.out.println(ranker.rankURL());
+			
+			query.clear();
+		}
+	
 	}
 	
 }
