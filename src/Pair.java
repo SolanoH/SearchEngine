@@ -39,6 +39,7 @@ public class Pair{
 	/* Set right Value  */
 	public void addPosting(Integer posting){
 		postings.add(posting);
+		docFreq++;
 	}
 	
 	/* Increment Left Value  */

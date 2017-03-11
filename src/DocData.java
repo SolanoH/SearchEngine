@@ -8,26 +8,25 @@
  */
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class docData
+public class DocData
 {
 
-	int docId;
+	private int documentID;
 	String url;
-	ConcurrentHashMap<String, Integer> description;
-	ConcurrentHashMap<String, Integer> keywords;
-	ConcurrentHashMap<String, Integer> authors;
-	ConcurrentHashMap<String, Integer> title;
-	ConcurrentHashMap<String, Integer> wordFreq;
+	ConcurrentHashMap< String, Integer > description;
+	ConcurrentHashMap< String, Integer > keywords;
+	ConcurrentHashMap< String, Integer > authors;
+	ConcurrentHashMap< String, Integer > title;
+	ConcurrentHashMap< String, Integer > wordFreq;
 
-	public int getDocId() {
-		return docId;
+	public int getDocumentID() {
+		return documentID;
 	}
 
-	public void setDocId(int docId) {
-		this.docId = docId;
+	public void setDocID( int docID ) {
+		this.documentID = docID;
 	}
 
 	public String getUrl() {
@@ -81,30 +80,20 @@ public class docData
 	/**
 	 * 
 	 */
-	public docData( Parser parser )
+	public DocData( Parser parser, int documentID, String url )
 	{
-		docId = parser.getDocId();
-		//System.out.println("Passed docID");
-		url = parser.getUrl();
-		//System.out.println("Passed getUrl");
+
+		this.documentID = documentID;
+		this.url = url;
 		description = parser.getDescription();
-		//System.out.println("Passed GetDescription");
 		keywords = parser.getKeywords();
-		//System.out.println("Passed GetKeywords ");
 		authors = parser.getAuthors();
-		//System.out.println("Passed getAuthors");
 		//title = parser.getTitle2();
-		//System.out.println("Passed getTitle2");
-		ConcurrentHashMap< String, Integer > d = parser.wordFrequency();
-		if( d != null ){
-			wordFreq = d;
-		}
-		//System.out.println("Passed getWordFreq");
+		wordFreq = parser.getWordFreq();
 	}
 
 	public boolean test( List< String > query, ConcurrentHashMap<String, Integer> map )
 	{
-		if (map != null)
 		for( String name : query )
 			if( map.containsKey( name ) )
 				return true;

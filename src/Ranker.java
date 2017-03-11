@@ -5,11 +5,11 @@ public class Ranker
 {
 
     private List< String > query;
-    private LinkedHashSet< docData > docsData;
+    private LinkedHashSet<DocData> docsData;
 
 
 
-    public Ranker( List< String > a, LinkedHashSet< docData > d )
+    public Ranker( List< String > a, LinkedHashSet<DocData> d )
     {
         query = a;
         docsData = d;
@@ -18,19 +18,19 @@ public class Ranker
     public List< String > rankURL()
     {
         HashMap< String, Integer > r = new HashMap<>();
-        for( docData doc : docsData )
+        for( DocData doc : docsData )
         {
             int score = 0;
-            if( doc.hasAuthor( query ) )
-                score += rankAuthors( doc );
-            if( doc.hasDescription( query ) )
-                score += rankDescription( doc );
-            if( doc.hasKeyWords( query ) )
-                score += rankKeywords( doc );
-            if( doc.hasTitle( query ) )
-                score += rankTitle( doc );
-            if( doc.hasWordFreq( query ) )
-                score += rankWordFreq( doc );
+//            if( doc.hasAuthor( query ) )
+//                score += rankAuthors( doc );
+//            if( doc.hasDescription( query ) )
+//                score += rankDescription( doc );
+//            if( doc.hasKeyWords( query ) )
+//                score += rankKeywords( doc );
+//            if( doc.hasTitle( query ) )
+//                score += rankTitle( doc );
+//            if( doc.hasWordFreq( query ) )
+//                score += rankWordFreq( doc );
             r.put( doc.getUrl(), score );
         }
 
@@ -69,27 +69,27 @@ public class Ranker
         return score;
     }
 
-    public int rankAuthors( docData doc )
+    public int rankAuthors( DocData doc )
     {
        return getScore( doc.getAuthors(), 20 );
     }
 
-    public int rankKeywords( docData doc )
+    public int rankKeywords( DocData doc )
     {
         return getScore( doc.getKeywords(), 15 );
     }
 
-    public int rankDescription( docData doc )
+    public int rankDescription( DocData doc )
     {
         return getScore( doc.getDescription(), 12 );
     }
 
-    public int rankTitle( docData doc )
+    public int rankTitle( DocData doc )
     {
         return getScore( doc.getTitle(), 20 );
     }
 
-    public int rankWordFreq( docData doc )
+    public int rankWordFreq( DocData doc )
     {
         int score = 0;
         for( String word : query )

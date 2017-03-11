@@ -10,119 +10,53 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-/* here is the skeleton for the parser, you can use Jsoup to help you parse the html files,
- * feel free to add any member variables and methods you may need.  You may also modify
- * the skeletons of the methods I added but they have to return the concurrent maps.
- */
-
-
 public class Parser
 {
-	String url;
-	int docId;
-	ConcurrentHashMap< String, Integer > wordFreq;
-	ConcurrentHashMap< String, List< String > > documentInformation;
 	Document htmlDocument;
+	ConcurrentHashMap< String, Integer > wordFreq;
+	ConcurrentHashMap< String, List< String > > documentMetaInformation;
 
-	@SuppressWarnings("rawtypes")
-	public Parser( File document, int id, String u )
+	public Parser( File document )
 	{
-		url = u;
-		docId = id;
-		wordFreq = new ConcurrentHashMap< String, Integer >() ;
-		documentInformation = new ConcurrentHashMap< String, List< String > >();
-
 		try
 		{
 			htmlDocument = Jsoup.parse( document, "UTF-8", "" );
-			initializeConcurrentHashMap();
+			wordFrequency();
+			documentMetaInformation();
 		}
-		catch( Exception e )
-		{
-			htmlDocument = null;
-		}
+		catch( Exception e ) { e.getMessage(); }
 	}
 
-
-	public ConcurrentHashMap< String, Integer > getWordFreq()
-	{
-		return wordFreq;
-	}
-	/**
-	 * Returns a metadata of html file
-	 * @return ConcurrentHashMap containing all metadata
-     */
-	public ConcurrentHashMap< String, List< String > > initializeConcurrentHashMap()
-	{
-		documentInformation = new ConcurrentHashMap<>();
-		for( Element tag : htmlDocument.getElementsByTag( "meta" ) )
-		{
-			if( !documentInformation.containsKey( tag.attr("name") ) )
-				documentInformation.put( tag.attr( "name" ), Collections.synchronizedList( new ArrayList<>() ) );
-			documentInformation.get( tag.attr("name") ).add( tag.attr("content") );
-		}
-
-		return documentInformation;
-	}
-
-	public ConcurrentHashMap< String, Integer > getAuthors()
-	{
-		//return documentInformation.get( "authors" );
-		return g( "authors" );
-
-	}
-
-	public ConcurrentHashMap< String, Integer > getKeywords()
-	{
-		return g( "keywords" );
-	}
-
-	public ConcurrentHashMap< String, Integer > g( String searching )
-	{
-		ConcurrentHashMap< String, Integer > s = new ConcurrentHashMap<>();
-		List< String > d = documentInformation.get( searching );
-
-		if( d != null )
-			for( String line : d )
-				for( String word : line.split( "\\s+" ) )
-					s.put( word, 1 );
-		return s;
-	}
-
-	public ConcurrentHashMap< String, Integer > getDescription()
-	{
-		return g( "description" );
-	}
-
-	public ConcurrentHashMap< String, Integer > getAbstract()
-	{
-		return g( "abstract" );
-	}
+	public boolean badURL() { return wordFreq == null; }
 
 	public String getTitle()
 	{
 		return htmlDocument.title();
 	}
-	public ConcurrentHashMap< String, Integer > getTitle2()
+
+	public ConcurrentHashMap< String, Integer > getWordFreq()
 	{
-		ConcurrentHashMap< String, Integer > s = new ConcurrentHashMap<>();
-		String d = getTitle();
-
-		if( d != null )
-			for( String l : d.split( "\\s+") )
-					s.put( l, 1 );
-		return s;
-
+		return wordFreq;
 	}
 
-	public ConcurrentHashMap< String, List< String > > getMetaData()
+	public ConcurrentHashMap< String, Integer > getAuthors()
 	{
-		return documentInformation;
+		return getData( "authors" );
 	}
 
-	public String getUrl()
+	public ConcurrentHashMap< String, Integer > getKeywords()
 	{
-		return url;
+		return getData( "keywords" );
+	}
+
+	public ConcurrentHashMap< String, Integer > getAbstract()
+	{
+		return getData( "abstract" );
+	}
+
+	public ConcurrentHashMap< String, Integer > getDescription()
+	{
+		return getData( "description" );
 	}
 
 	public ConcurrentHashMap< String, List< String > > getHeaders()
@@ -131,48 +65,42 @@ public class Parser
 		for( int value = 1; value < 7; value++ )
 		{
 			List< String > list = new LinkedList<>();
-			for (Element tag : htmlDocument.select( "h" + value ) )
+			for( Element tag : htmlDocument.select( "h" + value ) )
 				list.add( tag.ownText() );
-			headers.put("h" + value, list );
+			headers.put( "h" + value, list );
 		}
 
 		return headers;
 	}
-	
-	// Returns Zones of html files.
-	public ConcurrentHashMap< String, List< String > > getZones()
-	{
-		ConcurrentHashMap< String, List< String > > zones = getHeaders();
-		List< String > title = new LinkedList<>();
-		Collections.addAll( title, getTitle().split( "\\s+" ) );
-		zones.put( "title", title );
-		return zones;
-	}
 
-	public int getDocId()
+	private void wordFrequency()
 	{
-		return docId;
-	}
-
-	public ConcurrentHashMap< String, Integer > wordFrequency()
-	{
-
-		if( htmlDocument != null  )
+		wordFreq = new ConcurrentHashMap<>();
 		for( String line : htmlDocument.html().split( "\n" ) )
-		{
-			//System.out.println( Jsoup.parse( line ).text() );
-			for( String word : Jsoup.parse( line ).text().replaceAll( "[^a-zA-Z]+", " " ).split( "\\s+" ) )
-			{
-				word = word.toLowerCase();
+			for( String word : Jsoup.parse( line.toLowerCase() ).text().replaceAll( "[^a-zA-Z]+", " " ).split( "\\s+" ) )
 				if( !word.isEmpty() && word.length() > 1 )
-				{
 					wordFreq.put( word, ( wordFreq.containsKey(word) ? wordFreq.get( word ) + 1 : 1 ) );
-				}
-			}
-		}
-
-		//System.out.println( wordFreq.toString() );
-		return wordFreq;
 	}
 
+	private void documentMetaInformation()
+	{
+		documentMetaInformation = new ConcurrentHashMap<>();
+		for( Element tag : htmlDocument.getElementsByTag( "meta" ) )
+		{
+			if( !documentMetaInformation.containsKey( tag.attr( "name" ) ) )
+				documentMetaInformation.put( tag.attr( "name" ), Collections.synchronizedList( new ArrayList<>() ) );
+			documentMetaInformation.get( tag.attr( "name" ) ).add( tag.attr( "content" ) );
+		}
+	}
+
+	private ConcurrentHashMap< String, Integer > getData( String searching )
+	{
+		List< String > temp = documentMetaInformation.get( searching );
+		ConcurrentHashMap< String, Integer > data = new ConcurrentHashMap<>();
+		if( temp != null )
+			for( String line : temp )
+				for( String word : line.split( "\\s+" ) )
+					data.put( word, 1 );
+		return data;
+	}
 }

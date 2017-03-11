@@ -1,74 +1,35 @@
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 
- */
+public class SearchDocuments
+{
+	InvertedIndex invertedIndex;
 
-/**
- * @author Hector
- *
- */
-public class SearchDocuments {
-	
-	LinkedHashSet<Integer> postings;
-
-	/**
-	 * 
-	 */
-	public SearchDocuments() {
-		postings = new LinkedHashSet<>();
-	}
-	
-	
-	public SearchDocuments(LinkedList<String> query, InvertedIndex index ) {
-		postings = new LinkedHashSet<>();
-		searchQuery(query, index);
-	}
-	
-	
-	public SearchDocuments(String[] query, InvertedIndex index ) {
-		postings = new LinkedHashSet<>();
-		searchQuery(query, index);
+	public SearchDocuments( InvertedIndex index )
+	{
+		invertedIndex = index;
 	}
 
-	
-	public void searchQuery(LinkedList<String> query, InvertedIndex index){
-		String term = null;
-		LinkedHashSet<Integer> post;
-		while ((term = (String) query.pollFirst()) != null){
-			if ((post = index.getPostings(term.toLowerCase())) != null){
-				if (postings.isEmpty()){
-					postings.addAll(post);
-				}
-				else
-					postings.retainAll(post);
-			}
-			
-		}
-	}
-	
-	public void searchQuery(String[] query, InvertedIndex index){
-		LinkedHashSet<Integer> post;
-		for (int i = 0; i < query.length; i++){
-			if ((post = index.getPostings(query[i].toLowerCase())) != null){
-				if (postings.isEmpty()){
-					postings.addAll(post);
-				}
-				else
-					postings.retainAll(post);
-			}
-		}	
-	}
-	
-	
-	
-	// returns postings from the search query
-	public LinkedHashSet<Integer> getSearchResults(){
+	public LinkedHashSet< Integer > searchQuery( String query ) throws FileNotFoundException, IOException
+	{
+		LinkedHashSet< Integer > postings = new LinkedHashSet<>();
+		for( String word : query.toLowerCase().split( "\\s+" ) )
+			if( postings.isEmpty() )
+				postings.addAll( invertedIndex.getPostings( word ) );
+			else
+				postings.retainAll( invertedIndex.getPostings( word ) );
 		return postings;
 	}
+
+
+
+
+
+
+
+//	System.out.println(postings.getSearchResults());
+//	Ranker ranker = new Ranker(d, post.getPostData( postings.getSearchResults() ) );
+//	System.out.println(ranker.rankURL());
 
 }
