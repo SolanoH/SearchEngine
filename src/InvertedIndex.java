@@ -191,6 +191,7 @@ public class InvertedIndex {
 		    String line;
 		    while ((line = buffer.readLine()) != null) {
 		       String[] data = line.split(",");
+		       activeIndex.putIfAbsent(data[0], new Pair());
 		       for (int i = 1; i < data.length; i++){
 		    	   activeIndex.get(data[0]).addPosting(Integer.parseInt(data[i]));
 		       }
@@ -209,8 +210,8 @@ public class InvertedIndex {
 		try (BufferedReader buffer = new BufferedReader(new FileReader(filename))) {
 		    String line;
 		    while ((line = buffer.readLine()) != null) {
-		       String[] data = line.split(",");
-		       activeIndex.put(data[0], new Pair());
+		       String[] data = line.split(",");      
+		       activeIndex.putIfAbsent(data[0], new Pair());
 		       for (int i = 1; i < data.length; i++){
 		    	   activeIndex.get(data[0]).addPosting(Integer.parseInt(data[i]));
 		       }
