@@ -34,7 +34,7 @@ public class BuildIndex
 
 	private void loadFiles()
 	{
-		try( Stream< String > lines = Files.lines( Paths.get( System.getProperty( "user.dir" ) + "/WEBPAGES_RAW/simple.tsv"),
+		try( Stream< String > lines = Files.lines( Paths.get( System.getProperty( "user.dir" ) + "/WEBPAGES_RAW/bookkeeping.tsv"),
 				Charset.defaultCharset() ) ) { lines.forEachOrdered( this::processFile ); }
 		catch( Exception e ) { e.printStackTrace(); }
 	}
