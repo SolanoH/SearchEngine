@@ -4,8 +4,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import java.util.Iterator;
 
 /**
@@ -22,59 +24,103 @@ import java.util.Iterator;
  * Term1, post1, post2, post3, ....., postn
  * Term2, post1, post2, post3, ....., postn
  * Inverted Index uses the class Pair as its value
+ * The invertedIndexed is split into five sub inverted indexes for a smaller memory footprint
+ * only one sub inverted index will be active in memory
  */
 public class InvertedIndex {
-	private ConcurrentHashMap<String,Pair> index;
-	private ConcurrentHashMap<String, String> indexList;
+	private ConcurrentHashMap<String,Pair> activeIndex;
+	private ConcurrentHashMap<String, ConcurrentHashMap<String,Pair> > indexes;
+	private String activeIndexKey = "";
+	private String INT = "INT";
+	private String AE = "AE";
+	private String FJ = "FJ";
+	private String KO = "KO";
+	private String PT = "PT";
+	private String UZ = "UZ";
+	
+
 
 	/***
 	 * Empty Constructor
 	 */
 	public InvertedIndex() {
-		index = new ConcurrentHashMap<>();
-		indexList = new ConcurrentHashMap<>();
+		indexes = new ConcurrentHashMap<>(6);
+		indexes.put(INT, new ConcurrentHashMap<>());
+		indexes.put(AE, new ConcurrentHashMap<>());
+		indexes.put(FJ, new ConcurrentHashMap<>());
+		indexes.put(KO, new ConcurrentHashMap<>());
+		indexes.put(PT, new ConcurrentHashMap<>());
+		indexes.put(UZ, new ConcurrentHashMap<>());
+	}
+	
+	
+	/***
+	 * Constructor with initial capacity;
+	 * @param initialCapacity
+	 */
+	public InvertedIndex(int initialCapacity) {
+		indexes = new ConcurrentHashMap<>(6);
+		indexes.put(INT, new ConcurrentHashMap<>(initialCapacity));
+		indexes.put(AE, new ConcurrentHashMap<>(initialCapacity));
+		indexes.put(FJ, new ConcurrentHashMap<>(initialCapacity));
+		indexes.put(KO, new ConcurrentHashMap<>(initialCapacity));
+		indexes.put(PT, new ConcurrentHashMap<>(initialCapacity));
+		indexes.put(UZ, new ConcurrentHashMap<>(initialCapacity));
 	}
 
 	/***
-	 * ConstructorLoads inverted index from disk
-	 * @param invertedDisk is the filename of the inverted index on disk
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
+	 * This Constructor loads an  active inverted index from file
+	 * @param indexKey is the inverted index key for the index to be loaded i.e indexAE, indexFJ ...
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
-	
-	public InvertedIndex(String invertedDisk) throws FileNotFoundException, IOException {
-		loadIndexFromDisk(invertedDisk);
+	public InvertedIndex(String indexKey) throws FileNotFoundException, IOException {
+		indexes = new ConcurrentHashMap<>(6);
+		indexes.put(INT, new ConcurrentHashMap<>());
+		indexes.put(AE, new ConcurrentHashMap<>());
+		indexes.put(FJ, new ConcurrentHashMap<>());
+		indexes.put(KO, new ConcurrentHashMap<>());
+		indexes.put(PT, new ConcurrentHashMap<>());
+		indexes.put(UZ, new ConcurrentHashMap<>());
+		loadIndexFromDisk(indexKey);
 	}
 	
 	/***
-	 * addToDictionary adds term to the inverted index, if term is not in the index
+	 * add adds term to the inverted index, if term is not in the index
 	 * a new element is added to the index, if the term already exist, the document
 	 * frequency is incremented for that term.
 	 * @param docID is the document id that contains the String term
 	 * @param term 
 	 */
-	public void addtoDictonary(int docID, String term){
-		
+	public void add(int docID, String term){
+		String indexKey = mapKey(term);
 		if( term.isEmpty() )
 			return;
-			if (index.getOrDefault(term, null) == null){
+			if (indexes.get(indexKey).getOrDefault(term, null) == null){
 			Pair element = new Pair(docID);
-			index.put(term,element);	
+			indexes.get(indexKey).put(term,element);	
 		}
 		else{
-			index.get(term).addPosting(docID);
-			index.get(term).incrementDocFrequency();
+			indexes.get(indexKey).get(term).addPosting(docID);
+			indexes.get(indexKey).get(term).incrementDocFrequency();
 		}
 	}
 	
 	/***
 	 * getDocufreq returns the number of documents that contain the String term
-	 * if term is in the inverted index, returns null the term is not in the index
+	 * if term in the inverted index, returns null otherwise.
 	 * @param term 
-	 * @return
+	 * @return The number of documents that contain the @param term
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public int getDocFreq(String term){
-		return index.getOrDefault(term, null).getDocFrequency();
+	public int getDocFreq(String term) throws FileNotFoundException, IOException{
+		String indexKey = mapKey(term);
+		if (indexKey != activeIndexKey) {
+			activeIndexKey = indexKey;
+			loadIndexFromDisk();
+		}
+		return activeIndex.getOrDefault(term, null).getDocFrequency();
 	}
 	
 	/***
@@ -82,22 +128,30 @@ public class InvertedIndex {
 	 * that contain the String term in increasing order. 0,1,2,..,n.
 	 * @param term
 	 * @return Returns null if the String term is not in the inverted index
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public LinkedHashSet <Integer> getPostings(String term){
-		return index.getOrDefault(term, null).getPostings();
+	public LinkedHashSet <Integer> getPostings(String term) throws FileNotFoundException, IOException{
+		String indexKey = mapKey(term);
+		if (indexKey != activeIndexKey) {
+			activeIndexKey = indexKey;
+			loadIndexFromDisk();
+		}
+		return activeIndex.getOrDefault(term, null).getPostings();
 	}
+
 	
 	/***
-	 * writeIndextoDisk writes the inverted index to disk.
+	 * writeIndextoDisk(String indexKey, String filename) writes index to disk.
 	 * @param filename is the name of the inverted index to be written to disk
-	 * @throws FileNotFoundException in thrown if the file cannot be opened
+	 * @param indexKey is the key of the sub index to be written to disk
 	 */
-	public void writeIndexToDisk(String filename) throws FileNotFoundException{
-		PrintWriter writer = new PrintWriter(filename);
-		for (Entry<String, Pair> t : index.entrySet()){
+	private void writeIndexToDisk(String indexKey, String filename) throws IOException{
+		PrintWriter writer = new PrintWriter(new FileWriter(filename, true));
+		for (Entry<String, Pair> t : indexes.get(indexKey).entrySet()){
 			writer.print(t.getKey());
-			writer.print("," + index.get(t.getKey()).getDocFrequency());
-			Iterator<Integer> iterator = index.get(t.getKey()).getPostings().iterator();
+			writer.print("," + indexes.get(indexKey).get(t.getKey()).getDocFrequency());
+			Iterator<Integer> iterator = indexes.get(indexKey).get(t.getKey()).getPostings().iterator();
 			while (iterator.hasNext()){
 				writer.print("," + iterator.next());
 			}
@@ -108,25 +162,84 @@ public class InvertedIndex {
 	
 	
 	/***
-	 * loadIndexFromDisk loads an inverted index from disk
-	 * @param filename is the name of the inverted index to be loaded
+	 * writeIndexesToDisk() writes all the inverted disk to disk and frees memory.
+	 * @throws IOException
+	 */
+	public void writeIndexesToDisk() throws IOException{
+		String indexKey;
+		for (Entry<String, ConcurrentHashMap<String, Pair>> t : indexes.entrySet()){
+			indexKey = t.getKey();
+			String filename = "index" + indexKey;
+			writeIndexToDisk(indexKey,filename);
+			indexes.get(indexKey).clear();
+		}
+		System.gc();
+	}
+	
+	
+	
+	/***
+	 * loadIndexFromDisk(String indexKey) loads an inverted index from disk
+	 * @param indexKey
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	public void loadIndexFromDisk(String filename) throws FileNotFoundException, IOException{
-		index = new ConcurrentHashMap<>();
-		try (BufferedReader buffer = new BufferedReader(new FileReader(filename))) {
+	private void loadIndexFromDisk(String indexKey) throws FileNotFoundException, IOException{
+		activeIndex = new ConcurrentHashMap<>(100);
+		activeIndexKey = indexKey;
+		try (BufferedReader buffer = new BufferedReader(new FileReader("index" + activeIndexKey))) {
 		    String line;
 		    while ((line = buffer.readLine()) != null) {
 		       String[] data = line.split(",");
 		       for (int i = 1; i < data.length; i++){
-		    	   addtoDictonary(Integer.parseInt(data[i]), data[0] );
+		    	   activeIndex.get(data[0]).addPosting(Integer.parseInt(data[i]));
 		       }
 		    }
-		} 
-		
+		}
 	}
-
+	
+	/***
+	 * loadIndexFromDisk() 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void loadIndexFromDisk() throws FileNotFoundException, IOException{
+		String filename = "index" + activeIndexKey;
+		activeIndex = new ConcurrentHashMap<>(100);
+		try (BufferedReader buffer = new BufferedReader(new FileReader(filename))) {
+		    String line;
+		    while ((line = buffer.readLine()) != null) {
+		       String[] data = line.split(",");
+		       activeIndex.put(data[0], new Pair());
+		       for (int i = 1; i < data.length; i++){
+		    	   activeIndex.get(data[0]).addPosting(Integer.parseInt(data[i]));
+		       }
+		    }
+		}
+	}
+	
+	
+	/**
+	 * String mapKey(String term) maps term to a sub index
+	 * @param term
+	 * @return the key for the sub inverted index that may contain term
+	 */
+	private String mapKey(String term){
+		String indexKey;
+		if (term.compareToIgnoreCase(AE) < 0)
+			indexKey = INT;
+		else if (term.compareToIgnoreCase(FJ) < 0)
+			indexKey = AE;
+		else if (term.compareToIgnoreCase(KO) < 0)
+			indexKey = FJ;
+		else if (term.compareToIgnoreCase(PT) < 0)
+			indexKey = KO;
+		else if (term.compareToIgnoreCase(UZ) < 0)
+			indexKey = PT;
+		else
+			indexKey = UZ;		
+		return indexKey;
+	}
 }
 
 
