@@ -59,14 +59,18 @@ public class Parser
 		return getData( "description" );
 	}
 
+	/***
+	 * get headers from html source
+	 * @return
+	 */
 	public ConcurrentHashMap< String, List< String > > getHeaders()
 	{
 		ConcurrentHashMap< String, List< String > > headers = new ConcurrentHashMap<>();
 		for( int value = 1; value < 7; value++ )
 		{
 			List< String > list = new LinkedList<>();
-			for( Element tag : htmlDocument.select( "h" + value ) )
-				list.add( tag.ownText() );
+			for( Element tag : htmlDocument.select( ("h" + value)))
+				list.add( tag.text() );
 			headers.put( "h" + value, list );
 		}
 
@@ -85,7 +89,7 @@ public class Parser
 	private void documentMetaInformation()
 	{
 		documentMetaInformation = new ConcurrentHashMap<>();
-		for( Element tag : htmlDocument.getElementsByTag( "meta" ) )
+		for( Element tag : htmlDocument.getElementsByTag( "html" ) )
 		{
 			if( !documentMetaInformation.containsKey( tag.attr( "name" ) ) )
 				documentMetaInformation.put( tag.attr( "name" ), Collections.synchronizedList( new ArrayList<>() ) );
@@ -93,6 +97,11 @@ public class Parser
 		}
 	}
 
+	/***
+	 * Returns data in documentMetaInformation
+	 * @param searching
+	 * @return
+	 */
 	private ConcurrentHashMap< String, Integer > getData( String searching )
 	{
 		List< String > temp = documentMetaInformation.get( searching );
