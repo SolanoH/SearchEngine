@@ -1,4 +1,5 @@
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -70,7 +72,7 @@ public class Parser
 		{
 			List< String > list = new LinkedList<>();
 			for( Element tag : htmlDocument.select( ("h" + value)))
-				list.add( tag.text() );
+				list.add( tag.text().toLowerCase() );
 			headers.put( "h" + value, list );
 		}
 
@@ -87,14 +89,20 @@ public class Parser
 	}
 
 	private void documentMetaInformation()
-	{
+	{	
+		
+		String tagName;
 		documentMetaInformation = new ConcurrentHashMap<>();
-		for( Element tag : htmlDocument.getElementsByTag( "html" ) )
+		for( Element tag : htmlDocument.getElementsByTag( "meta" ) )
 		{
-			if( !documentMetaInformation.containsKey( tag.attr( "name" ) ) )
-				documentMetaInformation.put( tag.attr( "name" ), Collections.synchronizedList( new ArrayList<>() ) );
-			documentMetaInformation.get( tag.attr( "name" ) ).add( tag.attr( "content" ) );
+			if (tag.attr("name").isEmpty())
+				tagName = "http-equiv";
+			else
+				tagName = "name";
+			documentMetaInformation.putIfAbsent( tag.attr(tagName).toLowerCase(), Collections.synchronizedList( new ArrayList<>() ) );
+			documentMetaInformation.get( tag.attr(tagName).toLowerCase() ).add( tag.attr( "content" ) );
 		}
+		System.out.println("Done");
 	}
 
 	/***
@@ -104,7 +112,7 @@ public class Parser
 	 */
 	private ConcurrentHashMap< String, Integer > getData( String searching )
 	{
-		List< String > temp = documentMetaInformation.get( searching );
+		List< String > temp = documentMetaInformation.get(searching);
 		ConcurrentHashMap< String, Integer > data = new ConcurrentHashMap<>();
 		if( temp != null )
 			for( String line : temp )
