@@ -95,14 +95,10 @@ public class Parser
 		documentMetaInformation = new ConcurrentHashMap<>();
 		for( Element tag : htmlDocument.getElementsByTag( "meta" ) )
 		{
-			if (tag.attr("name").isEmpty())
-				tagName = "http-equiv";
-			else
-				tagName = "name";
+			tagName = tag.attr("name").isEmpty() ? "http-equiv" : "name";
 			documentMetaInformation.putIfAbsent( tag.attr(tagName).toLowerCase(), Collections.synchronizedList( new ArrayList<>() ) );
 			documentMetaInformation.get( tag.attr(tagName).toLowerCase() ).add( tag.attr( "content" ) );
 		}
-		System.out.println("Done");
 	}
 
 	/***
