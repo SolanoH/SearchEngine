@@ -87,6 +87,14 @@ public class Parser
 				if( !word.isEmpty() && word.length() > 1 )
 					wordFreq.put( word, ( wordFreq.containsKey(word) ? wordFreq.get( word ) + 1 : 1 ) );
 	}
+	
+	public LinkedList<String> getDocumentOutBoundLinks(){
+		LinkedList<String> outBoundLinks = new LinkedList<>();
+		for( Element url : htmlDocument.select("a[href*=http]")){
+			outBoundLinks.add(url.attr("HREF"));
+		}
+		return outBoundLinks;
+	}
 
 	private void documentMetaInformation()
 	{	
@@ -116,4 +124,6 @@ public class Parser
 					data.put( word, 1 );
 		return data;
 	}
+	
+	
 }
