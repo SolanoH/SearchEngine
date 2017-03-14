@@ -16,6 +16,9 @@ public class Post
 	{
 		posts.put( docData.getDocumentID(), docData );
 	}
+	
+	
+	
 
 	// Takes a list of document IDs and returns a list of docData
 	public LinkedHashSet< DocData > getPostData( LinkedHashSet< Integer > postList )
