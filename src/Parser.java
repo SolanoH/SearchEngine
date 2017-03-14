@@ -88,7 +88,7 @@ public class Parser
 					wordFreq.put( word, ( wordFreq.containsKey(word) ? wordFreq.get( word ) + 1 : 1 ) );
 	}
 	
-	public LinkedList<String> getDocumentOutBoundLinks(){
+	public LinkedList<String> getOutboundLinks(){
 		LinkedList<String> outBoundLinks = new LinkedList<>();
 		for( Element url : htmlDocument.select("a[href*=http]")){
 			outBoundLinks.add(url.attr("HREF"));
