@@ -1,53 +1,40 @@
-import java.util.LinkedHashSet;
+public class Pair< K, V >
+{
+	protected K first;
+	protected V second;
 
-/**
- * A Pair is a container that holds to an integer and LinkedList<Integer>
- * @param <T>
- */
+	public Pair()
+	{
+		this( null, null );
+	}
 
-public class Pair{
-	private Integer docFreq;
-	private LinkedHashSet<Integer> postings;
-	
-	/* Empty constructor */
-	public Pair() {
-		docFreq = 0;
-		postings = new LinkedHashSet<>();
+	public Pair( K f )
+	{
+		this( f, null );
 	}
-	
-	public Pair(Integer posting){
-		docFreq = 1;
-		postings = new LinkedHashSet<>();
-		postings.add(posting);
-	}
-	
-	/* Returns left value */
-	public Integer getDocFrequency(){
-		return docFreq;
-	}
-	
-	/* Returns right value */
-	public LinkedHashSet<Integer> getPostings(){
-		return postings;
-	}
-	
-	/* Set left Value  */
-	public void setLeft(Integer value){
-		docFreq = value;
-	}
-	
-	/* Set right Value  */
-	public void addPosting(Integer posting){
-		postings.add(posting);
-		docFreq++;
-	}
-	
-	/* Increment Left Value  */
-	public void incrementDocFrequency(){
-		docFreq++;
-	}
-	
-	
-	
 
+	public Pair( K f, V s )
+	{
+		first = f;
+		second = s;
+	}
+
+	public K getFirst() {
+		return first;
+	}
+
+	public void setFirst( K first )
+	{
+		this.first = first;
+	}
+
+	public V getSecond()
+	{
+		return second;
+	}
+
+	public void setSecond( V second )
+	{
+		this.second = second;
+	}
 }
