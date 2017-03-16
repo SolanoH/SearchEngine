@@ -3,11 +3,6 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- *
- * @author Hector Solano
- *
- */
 
 
 /**
@@ -30,8 +25,6 @@ public class InvertedIndex {
     private String KO = "KO";
     private String PT = "PT";
     private String UZ = "UZ";
-
-
 
     /***
      * Empty Constructor
@@ -121,7 +114,7 @@ public class InvertedIndex {
      * getPostings returns a sorted LinkedHashset with all the documents
      * that contain the String term in increasing order. 0,1,2,..,n.
      * @param term
-     * @return Returns null if the String term is not in the inverted index
+     * @return Returns an empty LinkedHashSet if the String term is not in the inverted index
      * @throws IOException
      * @throws FileNotFoundException
      */
@@ -132,7 +125,8 @@ public class InvertedIndex {
             activeIndexKey = indexKey;
             loadIndexFromDisk();
         }
-        return activeIndex.getOrDefault(term, null).getSecond();
+        return activeIndex.getOrDefault(term, null) == null ? new LinkedHashSet <Integer>() : activeIndex.get(term).getSecond();
+  
     }
 
 
