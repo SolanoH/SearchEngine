@@ -3,23 +3,29 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class BuildIndex
 {
 	private int documentID;
-	private int numberOfOutputFiles;
+
 
 	private Post post;
 	private InvertedIndex index;
 
+	private ConcurrentHashMap< String, LinkedList<Pair<String, Integer> > > linksMap;
+
+
+
 	public BuildIndex()
 	{
 		documentID = 0;
-		numberOfOutputFiles = 0;
 		post = new Post();
 		index = new InvertedIndex();
+		linksMap = new ConcurrentHashMap<>( 20000 );
 
 		//ExecutorService executorService = Executors.newFixedThreadPool( 4 );
 
@@ -32,9 +38,13 @@ public class BuildIndex
 
 	public InvertedIndex getIndex(){ return index; }
 
+	public ConcurrentHashMap<String, LinkedList<Pair<String, Integer>>> getLinksMap() {
+		return linksMap;
+	}
+
 	private void loadFiles()
 	{
-		try( Stream< String > lines = Files.lines( Paths.get( System.getProperty( "user.dir" ) + "/WEBPAGES_RAW/bookkeeping.tsv"),
+		try( Stream< String > lines = Files.lines( Paths.get( System.getProperty( "user.dir" ) + "/WEBPAGES_RAW/simple.tsv" ),
 				Charset.defaultCharset() ) ) { lines.forEachOrdered( this::processFile ); }
 		catch( Exception e ) { e.printStackTrace(); }
 	}
@@ -44,13 +54,22 @@ public class BuildIndex
 		String[] data = line.split( "\t" );
 		Parser parser = new Parser( new File( "WEBPAGES_RAW/" + data[ 0 ] ) );
 		if( !parser.badURL() )
-		{
+		{	
 			for( Map.Entry< String, Integer > entry : parser.getWordFreq().entrySet() )
 				index.add( documentID, entry.getKey() );
 			post.addPost( new DocData( parser, documentID, data[ 1 ] ) );
 			documentID++;
 			if( lowMemory() ) writeOutputFile();
+			LinkedList<String> links = parser.getOutboundLinks();
+			int size = links.size();
+			for( String link : links )
+			{
+				linksMap.putIfAbsent(link,new LinkedList<Pair<String, Integer> >());
+				linksMap.get(link).add(new Pair<String, Integer>(data[1],size));
+			}
 		}
+		writeOutputFile();
+
 	}
 
 
@@ -58,7 +77,7 @@ public class BuildIndex
 
 
 	//Not Working
-	private void writeOutputFile() 
+	private void writeOutputFile()
 	{
 		try {
 			index.writeIndexesToDisk();
